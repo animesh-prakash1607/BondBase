@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:3000");
+const socket = io("https://bondbase.onrender.com");
 
 const Chat = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -19,7 +19,7 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/user/allUsers")
+    axios.get("https://bondbase.onrender.com/api/user/allUsers")
       .then(res => setAllUsers(res.data))
       .catch(err => console.error("User fetch error", err));
   }, []);
@@ -27,13 +27,13 @@ const Chat = () => {
   const selectUser = async (user) => {
     setCurrentChatUser(user);
     try {
-      const convo = await axios.post("http://localhost:3000/api/conversations/", {
+      const convo = await axios.post("https://bondbase.onrender.com/api/conversations/", {
         senderId: currentUserId,
         receiverId: user._id,
       });
       setConversationId(convo.data._id);
 
-      const msgs = await axios.get(`http://localhost:3000/api/messages/${convo.data._id}`);
+      const msgs = await axios.get(`https://bondbase.onrender.com/api/messages/${convo.data._id}`);
       setMessages(msgs.data);
     } catch (err) {
       console.error("Chat load error", err);
@@ -50,7 +50,7 @@ const Chat = () => {
     };
 
     try {
-      const res = await axios.post("http://localhost:3000/api/messages/", msg);
+      const res = await axios.post("https://bondbase.onrender.com/api/messages/", msg);
       const msgWithTime = { ...res.data, createdAt: new Date().toISOString() };
       setMessages(prev => [...prev, msgWithTime]);
 

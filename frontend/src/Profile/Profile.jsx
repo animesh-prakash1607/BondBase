@@ -55,7 +55,7 @@ useEffect(() => {
   const fetchUsers = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.get('http://localhost:3000/api/user/allUsers',
+      const response = await axios.get('https://bondbase.onrender.com/api/user/allUsers',
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -82,12 +82,12 @@ const handleFollowToggle = async (targetUserId) => {
     setFollowing(updatedFollowing);
 
     // Backend update
-    await axios.put(`http://localhost:3000/api/user/follow/${targetUserId}`, {
+    await axios.put(`https://bondbase.onrender.com/api/user/follow/${targetUserId}`, {
       currentUserId: id,
     });
 
     // Refetch user data to sync
-    const updatedUser = await axios.post("http://localhost:3000/api/user/id", { id });
+    const updatedUser = await axios.post("https://bondbase.onrender.com/api/user/id", { id });
     setUser(updatedUser.data.user);
     setFollowing(updatedUser.data.user.following || []); // ✅ CORRECT HERE AGAIN
 
@@ -103,7 +103,7 @@ useEffect(() => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/posts/allPosts');
+      const response = await axios.get('https://bondbase.onrender.com/api/posts/allPosts');
       setFormData(response.data);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -113,7 +113,7 @@ useEffect(() => {
   fetchData();
 
   // Socket.io connection
-  const socket = io('http://localhost:3000', {
+  const socket = io('https://bondbase.onrender.com', {
     withCredentials: true,
   });
 
@@ -165,7 +165,7 @@ useEffect(() => {
  const fetchUser = async () => {
     const userId = localStorage.getItem("id");
     try {
-      const response = await axios.post("http://localhost:3000/api/user/id", 
+      const response = await axios.post("https://bondbase.onrender.com/api/user/id", 
         { id: userId }, 
         {
           headers: {
@@ -192,7 +192,7 @@ useEffect(() => {
   console.log("Deleting post with ID:", postId);
   console.log("User ID:", id);
   try {
-    await axios.delete(`http://localhost:3000/api/posts/delete/${postId}/${id}`);
+    await axios.delete(`https://bondbase.onrender.com/api/posts/delete/${postId}/${id}`);
     setFormData(prev => prev.filter(p => p._id !== postId));
   } catch (error) {
     console.error('Error deleting post:', error.response?.data || error.message);
@@ -207,7 +207,7 @@ const handleDeleteComment = async (postId, commentId) => {
   try {
     console.log("Deleting comment:", postId, commentId, id);
     const response = await axios.delete(
-      `http://localhost:3000/api/posts/delete/comment/${postId}/${commentId}/${id}`
+      `https://bondbase.onrender.com/api/posts/delete/comment/${postId}/${commentId}/${id}`
     );
 
     setFormData(prev =>
@@ -226,7 +226,7 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
 
   try {
     const response = await axios.delete(
-      `http://localhost:3000/api/posts/delete/reply/${postId}/${commentId}/${replyId}/${id}`
+      `https://bondbase.onrender.com/api/posts/delete/reply/${postId}/${commentId}/${replyId}/${id}`
     );
 
     const updatedComment = response.data.comment;
@@ -254,7 +254,7 @@ const handlePrivacyToggle = async () => {
     const newPrivacy = isPrivate === 'private' ? 'public' : 'private';
     setIsPrivate(newPrivacy); // Update local state immediately
 
-    await axios.put("http://localhost:3000/api/user/privacy", {
+    await axios.put("https://bondbase.onrender.com/api/user/privacy", {
       userId: id,
       isPrivate: newPrivacy,
     });
@@ -265,7 +265,7 @@ const handlePrivacyToggle = async () => {
 
   const handleLike = async (postId) => {
   try {
-    const response = await axios.put(`http://localhost:3000/api/posts/like/${postId}`, { userId: id });
+    const response = await axios.put(`https://bondbase.onrender.com/api/posts/like/${postId}`, { userId: id });
     const updatedPost = response.data;
 
     // Ensure userId is populated before replacing it in the state
@@ -292,7 +292,7 @@ const handlePrivacyToggle = async () => {
       setSaving(true);
 
   try {
-    const response = await axios.patch(`http://localhost:3000/api/user/updateProfile/${id}`, formData, {
+    const response = await axios.patch(`https://bondbase.onrender.com/api/user/updateProfile/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token if needed
@@ -312,13 +312,13 @@ const handlePrivacyToggle = async () => {
   if (!commentInput[postId]) return;
 
   try {
-    await axios.post(`http://localhost:3000/api/posts/comment/${postId}`, {
+    await axios.post(`https://bondbase.onrender.com/api/posts/comment/${postId}`, {
       userId: id,
       text: commentInput[postId]
     });
 
     // Re-fetch all posts from your backend
-    const allPostsResponse = await axios.get("http://localhost:3000/api/posts/allPosts");
+    const allPostsResponse = await axios.get("https://bondbase.onrender.com/api/posts/allPosts");
     setFormData(allPostsResponse.data);
    
     setCommentInput(prev => ({ ...prev, [postId]: '' }));
@@ -331,7 +331,7 @@ const handlePrivacyToggle = async () => {
   if (!replyInput[commentId]) return;
 
   try {
-    const response = await axios.post(`http://localhost:3000/api/posts/reply/${postId}/${commentId}`, {
+    const response = await axios.post(`https://bondbase.onrender.com/api/posts/reply/${postId}/${commentId}`, {
       userId: id,
       text: replyInput[commentId]
     });

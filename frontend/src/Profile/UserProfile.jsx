@@ -10,7 +10,7 @@ const UserProfile = () => {
     const fetchProfile = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/user/id", 
+          "https://bondbase.onrender.com/api/user/id", 
           { id },
           {
             headers: {
