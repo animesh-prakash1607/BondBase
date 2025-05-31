@@ -20,10 +20,15 @@ const PORT = process.env.PORT || 3000;
 // Create HTTP server
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  'http://localhost:5173',             // local dev
+  'https://bondbase.netlify.app'       // Netlify deployment
+];
+
 // Setup Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // your frontend URL
+    origin: allowedOrigins, // your frontend URL
     methods: ["GET", "POST", "PUT"],
     credentials: true,
   },
@@ -34,7 +39,7 @@ app.set("io", io);
 
 // Middleware
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(express.json());
