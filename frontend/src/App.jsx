@@ -11,10 +11,14 @@ import UserProfile from './Profile/UserProfile.jsx';
 import FrontPage from './Home/FrontPage.jsx';
 import OtherUsers from './Users/OtherUsers.jsx';
 import PageContent from './Home/PageContent.jsx';
+import BackgroundVideo from '../src/assets/background.mp4'
 
 function App() {
   return (
     <Router>
+       <video autoPlay loop muted className='fixed top-0 left-0 w-full h-full object-cover z-[-100]'>
+          <source src={BackgroundVideo} type='video/mp4' />
+        </video>
       <Routes>
         <Route path="/" element={<FrontPage />}>
                          <Route path="/home" element={<Home />} />
