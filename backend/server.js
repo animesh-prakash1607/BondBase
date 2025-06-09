@@ -21,7 +21,8 @@ const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 
 const allowedOrigins = [
-  'http://localhost:5173',             // local dev
+  'http://localhost:5173',
+    'https://bondbase.netlify.app/',
 ];
 
 // Setup Socket.IO
