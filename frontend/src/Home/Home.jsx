@@ -101,7 +101,7 @@ const prevImage = (postId, images) => {
       const token = localStorage.getItem('token');
 
       try {
-        const response = await axios.get('http://localhost:3000/api/user/allUsers',
+        const response = await axios.get('https://bondbase.onrender.com/api/user/allUsers',
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -118,9 +118,9 @@ const prevImage = (postId, images) => {
 
    const handleLike = async (postId) => {
     try {
-      const response = await axios.put(`http://localhost:3000/api/posts/like/${postId}`, { userId: id });
+      const response = await axios.put(`https://bondbase.onrender.com/api/posts/like/${postId}`, { userId: id });
 
-      const response2 = await axios.get("http://localhost:3000/api/posts/allPosts");
+      const response2 = await axios.get("https://bondbase.onrender.com/api/posts/allPosts");
     setFormData(response2.data);
     
 
@@ -131,7 +131,7 @@ const prevImage = (postId, images) => {
 
   const handleDeletePost = async (postId) => {
   try {
-    await axios.delete(`http://localhost:3000/api/posts/${postId}`, {
+    await axios.delete(`https://bondbase.onrender.com/api/posts/${postId}`, {
       data: { userId: id }
     });
     setFormData(prev => prev.filter(p => p._id !== postId));
@@ -146,7 +146,7 @@ const handleDeleteComment = async (postId, commentId) => {
 
   try {
     const response = await axios.delete(
-      `http://localhost:3000/api/posts/delete/comment/${postId}/${commentId}/${id}`
+      `https://bondbase.onrender.com/api/posts/delete/comment/${postId}/${commentId}/${id}`
     );
 
     setFormData(prev =>
@@ -166,7 +166,7 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
 
   try {
     const response = await axios.delete(
-      `http://localhost:3000/api/posts/delete/reply/${postId}/${commentId}/${replyId}/${id}`
+      `https://bondbase.onrender.com/api/posts/delete/reply/${postId}/${commentId}/${replyId}/${id}`
     );
 
     const updatedComment = response.data.comment;
@@ -194,13 +194,13 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
   if (!commentInput[postId]) return;
 
   try {
-    await axios.post(`http://localhost:3000/api/posts/comment/${postId}`, {
+    await axios.post(`https://bondbase.onrender.com/api/posts/comment/${postId}`, {
       userId: id,
       text: commentInput[postId]
     });
 
     // Re-fetch all posts from your backend
-    const allPostsResponse = await axios.get("http://localhost:3000/api/posts/allPosts");
+    const allPostsResponse = await axios.get("https://bondbase.onrender.com/api/posts/allPosts");
     setFormData(allPostsResponse.data);
 
     setCommentInput(prev => ({ ...prev, [postId]: '' }));
@@ -214,7 +214,7 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
   if (!replyInput[commentId]) return;
 
   try {
-    const response = await axios.post(`http://localhost:3000/api/posts/reply/${postId}/${commentId}`, {
+    const response = await axios.post(`https://bondbase.onrender.com/api/posts/reply/${postId}/${commentId}`, {
       userId: id,
       text: replyInput[commentId]
     });
@@ -261,7 +261,7 @@ useEffect(() => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/posts/allPosts');
+      const response = await axios.get('https://bondbase.onrender.com/api/posts/allPosts');
       setFormData(response.data);
     } catch (error) {
       toast.error(error.response.data.message);
@@ -271,7 +271,7 @@ useEffect(() => {
   fetchData();
 
   // Socket.io connection
-  const socket = io('http://localhost:3000', {
+  const socket = io('https://bondbase.onrender.com', {
     withCredentials: true,
   });
 

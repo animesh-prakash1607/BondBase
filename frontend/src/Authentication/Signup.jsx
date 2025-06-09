@@ -17,7 +17,7 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:3000/api/auth/signup", {
+      const response = await axios.post("https://bondbase.onrender.com/api/auth/signup", {
         firstName,
         lastName,
         email,

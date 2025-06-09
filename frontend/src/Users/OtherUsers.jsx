@@ -82,7 +82,7 @@ const OtherUsers = () => {
    const fetchUsers = async () => {
      const token = localStorage.getItem('token');
      try {
-       const response = await axios.get('http://localhost:3000/api/user/allUsers',
+       const response = await axios.get('https://bondbase.onrender.com/api/user/allUsers',
          {
            headers: {
              Authorization: `Bearer ${token}`
@@ -109,12 +109,12 @@ const OtherUsers = () => {
      setFollowing(updatedFollowing);
  
      // Backend update
-     await axios.put(`http://localhost:3000/api/user/follow/${targetUserId}`, {
+     await axios.put(`https://bondbase.onrender.com/api/user/follow/${targetUserId}`, {
        currentUserId: id,
      });
  
      // Refetch user data to sync
-     const updatedUser = await axios.post("http://localhost:3000/api/user/id", { id });
+     const updatedUser = await axios.post("https://bondbase.onrender.com/api/user/id", { id });
      setUser(updatedUser.data.user);
      setFollowing(updatedUser.data.user.following || []); // ✅ CORRECT HERE AGAIN
  
@@ -130,7 +130,7 @@ const OtherUsers = () => {
  
    const fetchData = async () => {
      try {
-       const response = await axios.get('http://localhost:3000/api/posts/allPosts');
+       const response = await axios.get('https://bondbase.onrender.com/api/posts/allPosts');
        setFormData(response.data);
      } catch (error) {
        toast.error(error.response.data.message);
@@ -140,7 +140,7 @@ const OtherUsers = () => {
    fetchData();
  
    // Socket.io connection
-   const socket = io('http://localhost:3000', {
+   const socket = io('https://bondbase.onrender.com', {
      withCredentials: true,
    });
  
@@ -192,7 +192,7 @@ const OtherUsers = () => {
   const fetchUser = async () => {
      const userId = localStorage.getItem("id");
      try {
-       const response = await axios.post("http://localhost:3000/api/user/id", 
+       const response = await axios.post("https://bondbase.onrender.com/api/user/id", 
          { id: userId }, 
          {
            headers: {
