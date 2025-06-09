@@ -5,7 +5,6 @@ import { toast, Toaster } from 'react-hot-toast';
 
 
 const socket = io('https://bondbase.onrender.com', {
-  transports: ['websocket'], // ✅ good
   withCredentials: true,
 });
 
