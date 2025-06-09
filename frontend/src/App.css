@@ -1,5 +1,33 @@
 @import "tailwindcss";
 
 body{
-  background-color: #f4f2ee ;
+   margin: 0;
+  background: linear-gradient(45deg,#731221 10%,  #ba1c38 30%, #7462c1 50%, #449fe2 80%, #252555 100%);
+  background-attachment: fixed; /* ensures it stays during scroll */
+  background-size: cover;
+}
+
+/* Scrollbar Styles for Webkit Browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e2130; /* dark track background */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555b77; /* thumb color */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6a708c; /* hover color */
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #555b77 #1e2130;
 }

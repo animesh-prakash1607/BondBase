@@ -1,10 +1,18 @@
 import axios from 'axios';
-import {React, useState,useEffect, use} from 'react';
+import {React, useState,useEffect, useRef} from 'react';
 import { FaRegHeart, FaHeart } from 'react-icons/fa';
 import { io } from 'socket.io-client';
 import { FaRegCommentDots } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import { Link } from 'react-router-dom';
+import { IoHome } from "react-icons/io5";
+import { CgProfile } from "react-icons/cg";
+import { IoChatboxEllipsesSharp } from "react-icons/io5";
+import { MdLocalPostOffice } from "react-icons/md";
+import { FaWindowClose } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
+import { toast, Toaster } from 'react-hot-toast';
+
 
 const Home = () => {
   const [formData, setFormData] = useState([]);
@@ -16,13 +24,62 @@ const [showReplyBox, setShowReplyBox] = useState({});
 const [showReplies, setShowReplies] = useState({});
 const [user , setUser] = useState([]);
 const [commentBox, setCommentBox] = useState({});
-const [openMenu, setOpenMenu] = useState(false);
+const [openMenu, setOpenMenu] = useState({});
+const menuRefs = useRef({});
+const toggleRefs = useRef({});
+const commentBoxRefs = useRef({});
+const commentToggleRefs = useRef({});
+
+
+
 const toggleMenu = (commentId) => {
-  setOpenMenu((prev) => ({
-    ...prev,
-    [commentId]: !prev[commentId],
-  }));
-};
+    setOpenMenu((prev) => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
+  };
+
+  useEffect(() => {
+  const handleOutsideClick = (e) => {
+    Object.entries(menuRefs.current).forEach(([id, menuEl]) => {
+      const toggleEl = toggleRefs.current[id];
+
+      if (
+        menuEl &&
+        !menuEl.contains(e.target) &&
+        toggleEl &&
+        !toggleEl.contains(e.target)
+      ) {
+        setOpenMenu((prev) => ({ ...prev, [id]: false }));
+      }
+    });
+  };
+
+  document.addEventListener('mousedown', handleOutsideClick);
+  return () => document.removeEventListener('mousedown', handleOutsideClick);
+}, []);
+
+
+useEffect(() => {
+  const handleOutsideCommentClick = (e) => {
+    Object.entries(commentBoxRefs.current).forEach(([id, boxEl]) => {
+      const toggleEl = commentToggleRefs.current[id];
+
+      if (
+        boxEl &&
+        !boxEl.contains(e.target) &&
+        toggleEl &&
+        !toggleEl.contains(e.target)
+      ) {
+        setCommentBox((prev) => ({ ...prev, [id]: false }));
+      }
+    });
+  };
+
+  document.addEventListener('mousedown', handleOutsideCommentClick);
+  return () => document.removeEventListener('mousedown', handleOutsideCommentClick);
+}, []);
+
 
     const [currentImageIndex, setCurrentImageIndex] = useState({});
 const nextImage = (postId, images) => {
@@ -44,7 +101,7 @@ const prevImage = (postId, images) => {
       const token = localStorage.getItem('token');
 
       try {
-        const response = await axios.get('https://bondbase.onrender.com/api/user/allUsers',
+        const response = await axios.get('http://localhost:3000/api/user/allUsers',
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -53,7 +110,7 @@ const prevImage = (postId, images) => {
         );
         setUser(response.data);
       } catch (error) {
-        console.error('Error fetching user:', error);
+        toast.error(error.response.data.message);
       }
     };
     fetchUser();
@@ -61,24 +118,25 @@ const prevImage = (postId, images) => {
 
    const handleLike = async (postId) => {
     try {
-      const response = await axios.put(`https://bondbase.onrender.com/api/posts/like/${postId}`, { userId: id });
+      const response = await axios.put(`http://localhost:3000/api/posts/like/${postId}`, { userId: id });
 
-      const response2 = await axios.get("https://bondbase.onrender.com/api/posts/allPosts");
+      const response2 = await axios.get("http://localhost:3000/api/posts/allPosts");
     setFormData(response2.data);
+    
 
     } catch (err) {
-      console.error(err);
+      toast.error(err.response.data.message);
     }
   };
 
   const handleDeletePost = async (postId) => {
   try {
-    await axios.delete(`https://bondbase.onrender.com/api/posts/${postId}`, {
+    await axios.delete(`http://localhost:3000/api/posts/${postId}`, {
       data: { userId: id }
     });
     setFormData(prev => prev.filter(p => p._id !== postId));
   } catch (error) {
-    console.error('Error deleting post:', error);
+    toast.error(error.response.data.message);
   }
 };
 
@@ -87,9 +145,8 @@ const handleDeleteComment = async (postId, commentId) => {
   if (!id) return console.error("User ID not found in localStorage");
 
   try {
-    console.log("Deleting comment:", postId, commentId, id);
     const response = await axios.delete(
-      `https://bondbase.onrender.com/api/posts/delete/comment/${postId}/${commentId}/${id}`
+      `http://localhost:3000/api/posts/delete/comment/${postId}/${commentId}/${id}`
     );
 
     setFormData(prev =>
@@ -98,7 +155,7 @@ const handleDeleteComment = async (postId, commentId) => {
       )
     );
   } catch (error) {
-    console.error('Error deleting comment:', error.response?.data || error.message);
+    toast.error(error.response.data.message);
   }
 };
 
@@ -109,7 +166,7 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
 
   try {
     const response = await axios.delete(
-      `https://bondbase.onrender.com/api/posts/delete/reply/${postId}/${commentId}/${replyId}/${id}`
+      `http://localhost:3000/api/posts/delete/reply/${postId}/${commentId}/${replyId}/${id}`
     );
 
     const updatedComment = response.data.comment;
@@ -127,7 +184,7 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
       )
     );
   } catch (error) {
-    console.error('Error deleting reply:', error.response?.data || error.message);
+    toast.error(error.response.data.message);
   }
 };
 
@@ -137,18 +194,18 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
   if (!commentInput[postId]) return;
 
   try {
-    await axios.post(`https://bondbase.onrender.com/api/posts/comment/${postId}`, {
+    await axios.post(`http://localhost:3000/api/posts/comment/${postId}`, {
       userId: id,
       text: commentInput[postId]
     });
 
     // Re-fetch all posts from your backend
-    const allPostsResponse = await axios.get("https://bondbase.onrender.com/api/posts/allPosts");
+    const allPostsResponse = await axios.get("http://localhost:3000/api/posts/allPosts");
     setFormData(allPostsResponse.data);
 
     setCommentInput(prev => ({ ...prev, [postId]: '' }));
   } catch (err) {
-    console.error(err);
+    toast.error(err.response.data.message);
   }
 };
 
@@ -157,20 +214,19 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
   if (!replyInput[commentId]) return;
 
   try {
-    const response = await axios.post(`https://bondbase.onrender.com/api/posts/reply/${postId}/${commentId}`, {
+    const response = await axios.post(`http://localhost:3000/api/posts/reply/${postId}/${commentId}`, {
       userId: id,
       text: replyInput[commentId]
     });
 
     const updatedPost = response.data;
-    console.log(response.data);
     setFormData(prev =>
       prev.map(p => (p._id === updatedPost._id ? updatedPost : p))
     );
     setReplyInput(prev => ({ ...prev, [commentId]: '' }));
     setShowReplyBox(prev => ({ ...prev, [commentId]: false }));
   } catch (err) {
-    console.error(err);
+    toast.error(err.response.data.message);
   }
 };
 
@@ -205,18 +261,17 @@ useEffect(() => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('https://bondbase.onrender.com/api/posts/allPosts');
-      console.log(response.data)
+      const response = await axios.get('http://localhost:3000/api/posts/allPosts');
       setFormData(response.data);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      toast.error(error.response.data.message);
     }
   };
 
   fetchData();
 
   // Socket.io connection
-  const socket = io('https://bondbase.onrender.com', {
+  const socket = io('http://localhost:3000', {
     withCredentials: true,
   });
 
@@ -267,7 +322,10 @@ useEffect(() => {
   
 
   return (
-    <div className='text-[rgb(17,24,39)]  min-h-screen'>
+    <>
+    <Toaster />
+    <div className='mb-5'>
+    <div className='text-[rgb(17,24,39)]  min-h-screen  py-5'>
       {/* Hero Section */}
       {/* <section className='mt-20 text-center px-4'>
         <h1 className='text-5xl font-bold'>BondBase</h1>
@@ -278,293 +336,800 @@ useEffect(() => {
       </section> */}
 
       
- <div className='mt-24 px-6'>
+ <div className=''>
         {/* <h2 className='text-3xl font-semibold text-center mb-8'>Recent Posts</h2> */}
-        <div className='flex flex-col w-[50%] m-auto gap-6'>
-          {formData && formData.length > 0 ? (
-formData
-  .filter(post => 
-  post?.userId?._id !== id 
-   &&
-     (
-     post?.userId?.privacy === "public" ||                       //remember to uncomment this
-       post.userId?.followers.includes(id)
-     )
-  )
-  .reverse().map((post, index) => (
-              <div key={index} className='bg-[#ffffff] px-3 py-2 rounded-xl border-1 border-gray-300 transition'>
-                <div className='flex items-center '>
-                  <img
-                    src={post.userId?.profilePhoto || '/default-profile.png'}
-                    alt='Profile'
-                    className='w-10 h-10 rounded-full mr-3 object-cover'
-                  />
-                  <div>
-                    <Link to={`/user/${post.userId?._id}`}><p className='font-semibold hover:underline transition-all duration-200'>{post.userId?.firstName} {post.userId?.lastName}</p></Link>
-                    <p className='text-sm text-gray-500'>{new Date(post.createdAt).toLocaleString()}</p>
-                  </div>
-                </div>
-                <div className='w-full bg-gray-300 h-[0.5px] my-2'></div>
-                <p className='text-gray-800 mb-3 text-[15px]'>{post.description}</p>
+        <div className='flex flex-col lg:w-[45vw] md:w-[60vw] w-[78vw] m-auto gap-6'>
 
-            {post.images?.length > 0 && (
-  <div className="relative w-[100%] max-w-xl mx-auto">
-    <div className="relative">
-      <img
-        src={post.images[currentImageIndex[post._id] || 0]}
-        alt={`Post ${post._id}`}
-        className="max-h-[500px] bg-gray-100 w-full object-contain rounded-lg"
-      />
-      {/* {post.images.length > 1 && (
-        <>
-          <button
-            onClick={() => prevImage(post._id, post.images)}
-            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full"
-          >
-            ‹
-          </button>
-          <button
-            onClick={() => nextImage(post._id, post.images)}
-            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full"
-          >
-            ›
-          </button>
-        </>
-      )} */}
-    </div>
+         {(() => {
+  const filteredPosts = formData
+    ? formData.filter(post =>
+        post?.userId?._id !== id &&
+        (post?.userId?.privacy === "public" || post.userId?.followers.includes(id))
+      ).reverse()
+    : [];
 
-    {/* Dots Navigation */}
-    <div className="flex justify-center gap-2 mt-2">
-      {post.images.map((_, index) => (
-        <button
-          key={index}
-          className={`h-2 w-2 rounded-full cursor-pointer ${
-            (currentImageIndex[post._id] || 0) === index
-              ? 'bg-blue-500'
-              : 'bg-gray-300'
-          }`}
-          onClick={() =>
-            setCurrentImageIndex((prev) => ({
-              ...prev,
-              [post._id]: index,
-            }))
-          }
-        />
-      ))}
-    </div>
-  </div>
-)}
-
-
-    <div className='flex justify-between items-center mx-4 text-gray-500'>
-      <div className='text-[13px]'>{post.likes.length} {post.likes.length === 1 ? 'Like' : 'Likes'}</div>
-      <div className='text-[13px]'>{post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}</div>
-    </div>
-
-         <div className='h-[0.5px] bg-gray-300 mt-2'></div>
-
-        <div className='flex justify-around items-center mt-3 mb-1'>
-          <div className='flex items-center gap-2'>
-              <button onClick={() => handleLike(post._id)}>
-                    {post.likes.includes(id) ? (
-                      <FaHeart className='text-red-500 text-xl cursor-pointer' />
-                    ) : (
-                      <FaRegHeart className='text-gray-500 text-xl cursor-pointer' />
-                    )}
-                  </button>
-                  <div>Like</div>
-          </div>
-          <div className='flex items-center gap-2 cursor-pointer' onClick={() =>
-  setCommentBox((prev) => ({
-    ...prev,
-    [post._id]: !prev[post._id],
-  }))
-}
->
-            <FaRegCommentDots size={20}/>
-            <div>Comment</div>
-          </div>
-
-        </div>
-                {/* Like Button */}
-                {/* <div className='mt-4 flex items-center gap-3'>
-                  <button onClick={() => handleLike(post._id)}>
-                    {post.likes.includes(id) ? (
-                      <FaHeart className='text-red-500 text-xl cursor-pointer' />
-                    ) : (
-                      <FaRegHeart className='text-gray-500 text-xl cursor-pointer' />
-                    )}
-                  </button>
-                  <span>{post.likes.length} {post.likes.length === 1 ? 'Like' : 'Likes'}</span>
-                </div> */}
-
-                {/* Comments */}
-          {commentBox[post._id] && (
-          <div className='mt-4' >
-            <div className='flex items-center gap-2'>
-                  <input
-                    type='text'
-                    placeholder='Add a comment...'
-                    value={commentInput[post._id] || ''}
-                    onChange={(e) =>
-                      setCommentInput(prev => ({ ...prev, [post._id]: e.target.value }))
-                    }
-                    className='w-full border px-3 py-1 rounded-md'
-                  />
-                  <button
-                    onClick={() => handleComment(post._id)}
-                    className=' bg-blue-500 text-white px-3 py-1 cursor-pointer rounded-md hover:bg-blue-600'
-                  >
-                    Comment
-                  </button>
-                 </div>
-                  <div className='mt-3 max-h-40 overflow-y-auto mx-3'>
-                  <div className='font-semibold text-[12px] text-gray-700 my-1'>{post.comments.length === 0 ? 'No comments yet' : 'Comments'}</div>
-{[...post.comments].reverse().map((c, i) => (
-  <div key={i} className='mb-2 mx-1 relative'>
-    <div className='text-sm text-gray-700'>
-      <div className='font-semibold flex items-center justify-between'>
-       <div>{c.userId ? `${c.userId.firstName} ${c.userId.lastName}` : 'User'} </div>  
-    <div className='flex items-center justify-center gap-1'><div className='text-[12px] text-gray-700'>{getRelativeTime(c.createdAt)}</div> <div onClick={()=>toggleMenu(c._id)} className='cursor-pointer hover:bg-gray-100 rounded-full p-1'><BsThreeDots size={16} className=''/></div></div>    
-      </div> 
-      {/*  */}
-    
-    </div>
-    <div className='text-sm text-gray-700 ml-1'>
-    {c.text}  
-    </div>
-
-    {openMenu[c._id] ?  (
-     <div className=' bg-white border-[0.1px] border-gray-600 w-[100px] h-[60px] flex flex-col justify-center items-center px-3 py-2 absolute top-[-15px] right-10 rounded-md font-semibold shadow-lg gap-2'>
-     { c.userId._id === id  && (
-      <button
-        onClick={() => handleDeleteComment(post._id, c._id)}
-        className='text-gray-700 text-xs  cursor-pointer'
-      >
-        Delete
-      </button>
-    )} 
-    <button
-      onClick={() =>
-        setShowReplyBox(prev => ({ ...prev, [c._id]: !prev[c._id] }))
-      }
-      className='text-gray-700 text-xs  cursor-pointer'
-    >
-      {showReplyBox[c._id] ? 'Cancel' : 'Reply'}
-    </button>
-    </div>)
-    : null
-    
-    }  
-    
-    
-
-    {/* Reply Input */}
-    {showReplyBox[c._id] && (
-      <div className='mt-1 '>
-        <input
-          type='text'
-          placeholder='Write a reply...'
-          value={replyInput[c._id] || ''}
-          onChange={(e) =>
-            setReplyInput(prev => ({ ...prev, [c._id]: e.target.value }))
-          }
-          className='w-full border px-2 py-1 rounded-md text-sm'
-        />
-        <button
-          onClick={() => handleReply(post._id, c._id)}
-          className='mt-1 bg-green-500 text-white px-2 py-1 text-xs cursor-pointer rounded hover:bg-green-600'
-        >
-          Reply
-        </button>
-      </div>
-    )}
-
-    {/* Render Replies */}
-    {c.replies && c.replies.length > 0 && (
-      <div className=''>
-        <button
-          onClick={() =>
-            setShowReplies(prev => ({ ...prev, [c._id]: !prev[c._id] }))
-          }
-          className='text-indigo-500 text-xs mb-1 cursor-pointer'
-        >
-          {showReplies[c._id] ? 'Hide Replies' : `View Replies (${c.replies.length})`}
-        </button>
-
-        {showReplies[c._id] && (
-          <div className='mt-1 space-y-1'>
-           {[...c.replies].reverse().map((r, j) => {
-  const replyUserId = typeof r.userId === 'object' ? r.userId._id : r.userId;
+  if (filteredPosts.length === 0) {
+    return (
+      <p className='text-center text-white z-50 col-span-full mt-10'>No posts to display.</p>
+    );
+  }
 
   return (
-    <div key={j} className='text-xs text-gray-600 ml-5 flex items-center justify-between'>
-      <div className='flex items-start justify-center gap-2'>
-         <div>
-      <div className='font-semibold'>
-        {r.name?.firstName || r.userId?.firstName || 'User'} {r.name?.lastName || r.userId?.lastName || ''}
-      </div> 
-      {/* <p className='text-[10px] text-gray-400 ml-1'>
-      </p> */}
-
-      <div className='ml-1'>
-        {r.text}
-      </div>
-      </div>
-
-      <div>
-         {getRelativeTime(r.createdAt)}
-      </div>
-      </div>
-
-      
-      <div>
-        {(id === replyUserId && post.userId._id !== id) && (
-        <button
-          onClick={() => handleDeleteReply(post._id, c._id, r._id)}
-          className='bg-red-600 text-white px-2 py-1 rounded-md text-xs ml-2 cursor-pointer'
-        >
-          Delete
-        </button>
-      )}
-      </div>
-    </div>
-  );
-})}
-
-
+    <>
+      <h1 className='text-3xl font-bold mt-2  sm:mb-5 text-center text-white'>Home Feed</h1>
+      {filteredPosts.reverse().map((post) => (
+        <div key={post._id} className='bg-[#10121b66] px-5 sm:px-8 py-5 rounded-xl transition mb-6'>
+          {/* Post Header */}
+          <div className='flex items-center mb-4'>
+            <img
+              src={post.userId?.profilePhoto || '/default-profile.png'}
+              alt='Profile'
+              className='w-10 h-10 rounded-full mr-3 object-cover'
+            />
+            <div>
+              <Link to={`/user/${post.userId?._id}`}>
+                <p className='font-semibold hover:underline transition-all duration-200 text-white'>
+                  {post.userId?.firstName} {post.userId?.lastName}
+                </p>
+              </Link>
+              <p className='text-sm text-gray-300'>{new Date(post.createdAt).toLocaleString()}</p>
+            </div>
           </div>
-        )}
-      </div>
-    )}
-  </div>
-))}
 
-</div>
-
-                </div>
-            )}      
+          {/* Post Image Carousel */}
+          {post.images?.length > 0 && (
+            <div className="relative w-full max-w-xl mx-auto">
+              <div className="relative mt-4">
+                <img
+                  src={post.images[currentImageIndex[post._id] || 0]}
+                  alt={`Post ${post._id}`}
+                  className="max-h-[500px] w-full bg-[#10121b66] object-contain rounded-lg"
+                />
               </div>
-            ))
-          ) : (
-            <p className='text-center text-gray-500 col-span-full'>No posts to display.</p>
+              <div className="flex justify-center gap-2 mt-2">
+                {post.images.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`h-2 w-2 rounded-full cursor-pointer ${
+                      (currentImageIndex[post._id] || 0) === index ? 'bg-blue-500' : 'bg-gray-300'
+                    }`}
+                    onClick={() =>
+                      setCurrentImageIndex((prev) => ({ ...prev, [post._id]: index }))
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Description */}
+          <p className='text-white font-semibold my-3 text-[15px]'>{post.description}</p>
+
+          {/* Like and Comment Counts */}
+          <div className='flex justify-between items-center text-white text-[13px]'>
+            <div>{post.likes.length} {post.likes.length === 1 ? 'Like' : 'Likes'}</div>
+            <div>{post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}</div>
+          </div>
+
+          <div className='h-[0.5px] bg-gray-500 mt-2'></div>
+
+          {/* Like and Comment Buttons */}
+          <div className='flex justify-between items-center mt-2'>
+            <div className='flex items-center gap-2'>
+              <button onClick={() => handleLike(post._id)}>
+                {post.likes.includes(id) ? (
+                  <FaHeart className='text-white text-xl cursor-pointer' />
+                ) : (
+                  <FaRegHeart className='text-white text-xl cursor-pointer' />
+                )}
+              </button>
+              <div className='text-white'>Like</div>
+            </div>
+
+            <div
+              className='flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#10121b66]'
+              onClick={() => setCommentBox(prev => ({ ...prev, [post._id]: !prev[post._id] }))}
+              ref={(el) => {
+                if (el) commentToggleRefs.current[post._id] = el;
+                else delete commentToggleRefs.current[post._id];
+              }}
+            >
+              <FaRegCommentDots size={20} className='text-white' />
+              <div className='text-white'>Comment</div>
+            </div>
+          </div>
+
+          {/* Comment Box */}
+          {commentBox[post._id] && (
+            <div className='mt-4' ref={(el) => {
+              if (el) commentBoxRefs.current[post._id] = el;
+              else delete commentBoxRefs.current[post._id];
+            }}>
+              <div className='flex items-center gap-2 flex-col sm:flex-row'>
+                <input
+                  type='text'
+                  placeholder='Add a comment...'
+                  value={commentInput[post._id] || ''}
+                  onChange={(e) => setCommentInput(prev => ({ ...prev, [post._id]: e.target.value }))}
+                  className='w-full border px-3 py-1 rounded-md text-white'
+                />
+                <button
+                  onClick={() => handleComment(post._id)}
+                  className='bg-blue-500 text-white cursor-pointer w-full sm:w-fit px-3 py-1 rounded-md hover:bg-blue-600'
+                >
+                  Comment
+                </button>
+              </div>
+
+              <div className='mt-3 max-h-40 overflow-y-auto sm:mx-3'>
+                <div className='font-semibold text-[12px] text-white my-1'>
+                  {post.comments.length === 0 ? 'No comments yet' : 'Comments'}
+                </div>
+
+                {[...post.comments].reverse().map((c, i) => (
+                  <div key={i} className='mb-2 sm:mx-1 relative bg-[#15182666] p-2 rounded-md'>
+                    {/* Comment Header */}
+                    <div className='text-sm text-white'>
+                      <div className='font-semibold flex items-center justify-between'>
+                        <div>{c.userId ? `${c.userId.firstName} ${c.userId.lastName}` : 'User'}</div>
+                        <div className='flex items-center gap-1'>
+                          <div className='text-[12px] text-white'>{getRelativeTime(c.createdAt)}</div>
+                          <div
+                            ref={(el) => {
+                              if (el) toggleRefs.current[c._id] = el;
+                              else delete toggleRefs.current[c._id];
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleMenu(c._id);
+                            }}
+                            className='cursor-pointer hover:bg-[#10121b66] rounded-full p-1'
+                          >
+                            <BsThreeDots size={16} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className='text-sm text-gray-300'>{c.text}</div>
+
+                    {/* Dropdown Menu */}
+                    {openMenu[c._id] && (
+                      <div
+                        ref={(el) => {
+                          if (el) menuRefs.current[c._id] = el;
+                          else delete menuRefs.current[c._id];
+                        }}
+                        className='bg-[#15182666] text-white px-2 py-2 flex flex-col items-center absolute top-[-15px] right-10 rounded-md font-semibold shadow-lg gap-2'
+                      >
+                        {c.userId._id === id && (
+                          <button
+                            onClick={() => handleDeleteComment(post._id, c._id)}
+                            className='text-xs cursor-pointer bg-red-500 px-3 py-1 rounded-md hover:bg-red-600'
+                          >
+                            Delete
+                          </button>
+                        )}
+                        <button
+                          onClick={() =>
+                            setShowReplyBox((prev) => ({ ...prev, [c._id]: !prev[c._id] }))
+                          }
+                          className='text-xs cursor-pointer bg-green-500 w-[60px] py-1 rounded-md hover:bg-green-600'
+                        >
+                          {showReplyBox[c._id] ? 'Cancel' : 'Reply'}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Reply Input */}
+                    {showReplyBox[c._id] && (
+                      <div className='mt-1'>
+                        <input
+                          type='text'
+                          placeholder='Write a reply...'
+                          value={replyInput[c._id] || ''}
+                          onChange={(e) =>
+                            setReplyInput(prev => ({ ...prev, [c._id]: e.target.value }))
+                          }
+                          className='w-full border text-white mt-1 px-2 py-1 rounded-md text-sm border-white'
+                        />
+                        <button
+                          onClick={() => handleReply(post._id, c._id)}
+                          className='my-1 bg-green-500 text-white px-2 py-1 text-xs cursor-pointer rounded hover:bg-green-600'
+                        >
+                          Reply
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Render Replies */}
+                    {c.replies && c.replies.length > 0 && (
+                      <div>
+                        <button
+                          onClick={() =>
+                            setShowReplies(prev => ({ ...prev, [c._id]: !prev[c._id] }))
+                          }
+                          className='text-white text-xs mb-1 cursor-pointer bg-[#151826] py-1 px-2 rounded-md'
+                        >
+                          {showReplies[c._id] ? 'Hide Replies' : `View Replies (${c.replies.length})`}
+                        </button>
+
+                        {showReplies[c._id] && (
+                          <div className='mt-1 space-y-1'>
+                            {[...c.replies].reverse().map((r, j) => {
+                              const replyUserId = typeof r.userId === 'object' ? r.userId._id : r.userId;
+
+                              return (
+                                <div key={j} className='text-xs text-gray-600 sm:ml-5 flex items-center justify-between bg-[#10121b66] p-2 rounded-md'>
+                                  <div className='flex items-start gap-2'>
+                                    <div>
+                                      <div className='font-semibold text-white'>
+                                        {r.name?.firstName || r.userId?.firstName || 'User'} {r.name?.lastName || r.userId?.lastName || ''}
+                                      </div>
+                                      <div className='text-white'>{r.text}</div>
+                                    </div>
+                                    <div className='text-white'>{getRelativeTime(r.createdAt)}</div>
+                                  </div>
+
+                                  <div>
+                                    {(id === replyUserId && post.userId._id !== id) && (
+                                      <button
+                                        onClick={() => handleDeleteReply(post._id, c._id, r._id)}
+                                        className='bg-red-600 text-white px-2 py-1 rounded-md text-xs ml-2 cursor-pointer'
+                                      >
+                                        Delete
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
+      ))}
+    </>
+  );
+})()}
+
+        </div>
       </div>
 
 
 
-      {/* Footer */}
-      <footer className='mt-24 px-4 py-10 border-t border-gray-200 text-center text-[#6b7280] text-sm'>
-        <p>© 2025 BondBase. All rights reserved.</p>
-        <div className='mt-2'>
-          <a href='#' className='mx-2 hover:underline'>Community</a>
-          <a href='#' className='mx-2 hover:underline'>Guidelines</a>
-          <a href='#' className='mx-2 hover:underline'>Feedback</a>
-        </div>
-      </footer>
+     
     </div>
+    
+    </div>
+    </>
   );
 };
 
 export default Home;
+
+//   <div className='w-[70%] overflow-y-scroll  h-[90%] mx-auto'>
+//        {formData && formData.length > 0 ? (
+// formData
+//   .filter(post => 
+//   post?.userId?._id !== id 
+//    &&
+//      (
+//      post?.userId?.privacy === "public" ||                       //remember to uncomment this
+//        post.userId?.followers.includes(id)
+//      )
+//   )
+//   .reverse().map((post, index) => (
+//               <div key={index} className='bg-[#10121b66] px-3 py-2 rounded-xl hover:bg-[#1e1b42] transition'>
+//                 <div className='flex items-center '>
+//                   <img
+//                     src={post.userId?.profilePhoto || '/default-profile.png'}
+//                     alt='Profile'
+//                     className='w-10 h-10 rounded-full mr-3 object-cover'
+//                   />
+//                   <div>
+//                     <Link to={`/user/${post.userId?._id}`}><p className='font-semibold hover:underline transition-all duration-200 text-white'>{post.userId?.firstName} {post.userId?.lastName}</p></Link>
+//                     <p className='text-sm text-gray-500'>{new Date(post.createdAt).toLocaleString()}</p>
+//                   </div>
+//                 </div>
+//                 <div className='w-full bg-gray-300 h-[0.5px] my-2'></div>
+//                 <p className='text-white mb-3 text-[15px] '>{post.description}</p>
+
+//             {post.images?.length > 0 && (
+//   <div className="relative w-[100%] max-w-xl mx-auto">
+//     <div className="relative">
+//       <img
+//         src={post.images[currentImageIndex[post._id] || 0]}
+//         alt={`Post ${post._id}`}
+//         className="max-h-[500px] bg-[#10121b] w-full object-contain rounded-lg"
+//       />
+//       {/* {post.images.length > 1 && (
+//         <>
+//           <button
+//             onClick={() => prevImage(post._id, post.images)}
+//             className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full"
+//           >
+//             ‹
+//           </button>
+//           <button
+//             onClick={() => nextImage(post._id, post.images)}
+//             className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full"
+//           >
+//             ›
+//           </button>
+//         </>
+//       )} */}
+//     </div>
+
+//     {/* Dots Navigation */}
+//     <div className="flex justify-center gap-2 mt-2">
+//       {post.images.map((_, index) => (
+//         <button
+//           key={index}
+//           className={`h-2 w-2 rounded-full cursor-pointer ${
+//             (currentImageIndex[post._id] || 0) === index
+//               ? 'bg-blue-500'
+//               : 'bg-gray-300'
+//           }`}
+//           onClick={() =>
+//             setCurrentImageIndex((prev) => ({
+//               ...prev,
+//               [post._id]: index,
+//             }))
+//           }
+//         />
+//       ))}
+//     </div>
+//   </div>
+// )}
+
+
+//     <div className='flex justify-between items-center mx-4 text-gray-400'>
+//       <div className='text-[13px]'>{post.likes.length} {post.likes.length === 1 ? 'Like' : 'Likes'}</div>
+//       <div className='text-[13px]'>{post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}</div>
+//     </div>
+
+//          <div className='h-[0.5px] bg-gray-300 mt-2'></div>
+
+//         <div className='flex justify-around items-center mt-3 mb-1'>
+//           <div className='flex items-center gap-2'>
+//               <button onClick={() => handleLike(post._id)}>
+//                     {post.likes.includes(id) ? (
+//                       <FaHeart className='text-red-500 text-xl cursor-pointer' />
+//                     ) : (
+//                       <FaRegHeart className='text-gray-500 text-xl cursor-pointer' />
+//                     )}
+//                   </button>
+//                   <div className='text-[#8f9394]'>Like</div>
+//           </div>
+//           <div className='flex items-center gap-2 cursor-pointer' onClick={() =>
+//   setCommentBox((prev) => ({
+//     ...prev,
+//     [post._id]: !prev[post._id],
+//   }))
+// }
+// >
+//             <FaRegCommentDots size={20} className='text-[#8f9394]' />
+//             <div className='text-[#8f9394]'>Comment</div>
+//           </div>
+
+//         </div>
+//                 {/* Like Button */}
+//                 {/* <div className='mt-4 flex items-center gap-3'>
+//                   <button onClick={() => handleLike(post._id)}>
+//                     {post.likes.includes(id) ? (
+//                       <FaHeart className='text-red-500 text-xl cursor-pointer' />
+//                     ) : (
+//                       <FaRegHeart className='text-gray-500 text-xl cursor-pointer' />
+//                     )}
+//                   </button>
+//                   <span>{post.likes.length} {post.likes.length === 1 ? 'Like' : 'Likes'}</span>
+//                 </div> */}
+
+//                 {/* Comments */}
+//           {commentBox[post._id] && (
+//           <div className='mt-4' >
+//             <div className='flex items-center gap-2'>
+//                   <input
+//                     type='text'
+//                     placeholder='Add a comment...'
+//                     value={commentInput[post._id] || ''}
+//                     onChange={(e) =>
+//                       setCommentInput(prev => ({ ...prev, [post._id]: e.target.value }))
+//                     }
+//                     className='w-full border px-3 py-1 rounded-md'
+//                   />
+//                   <button
+//                     onClick={() => handleComment(post._id)}
+//                     className=' bg-blue-500 text-white px-3 py-1 cursor-pointer rounded-md hover:bg-blue-600'
+//                   >
+//                     Comment
+//                   </button>
+//                  </div>
+//                   <div className='mt-3 max-h-40 overflow-y-auto mx-3'>
+//                   <div className='font-semibold text-[12px] text-gray-700 my-1'>{post.comments.length === 0 ? 'No comments yet' : 'Comments'}</div>
+// {[...post.comments].reverse().map((c, i) => (
+//   <div key={i} className='mb-2 mx-1 relative'>
+//     <div className='text-sm text-gray-700'>
+//       <div className='font-semibold flex items-center justify-between'>
+//        <div>{c.userId ? `${c.userId.firstName} ${c.userId.lastName}` : 'User'} </div>  
+//     <div className='flex items-center justify-center gap-1'><div className='text-[12px] text-gray-700'>{getRelativeTime(c.createdAt)}</div> <div onClick={()=>toggleMenu(c._id)} className='cursor-pointer hover:bg-gray-100 rounded-full p-1'><BsThreeDots size={16} className=''/></div></div>    
+//       </div> 
+//       {/*  */}
+    
+//     </div>
+//     <div className='text-sm text-gray-700 ml-1'>
+//     {c.text}  
+//     </div>
+
+//     {openMenu[c._id] ?  (
+//      <div className=' bg-white border-[0.1px] border-gray-600 w-[100px] h-[60px] flex flex-col justify-center items-center px-3 py-2 absolute top-[-15px] right-10 rounded-md font-semibold shadow-lg gap-2'>
+//      { c.userId._id === id  && (
+//       <button
+//         onClick={() => handleDeleteComment(post._id, c._id)}
+//         className='text-gray-700 text-xs  cursor-pointer'
+//       >
+//         Delete
+//       </button>
+//     )} 
+//     <button
+//       onClick={() =>
+//         setShowReplyBox(prev => ({ ...prev, [c._id]: !prev[c._id] }))
+//       }
+//       className='text-gray-700 text-xs  cursor-pointer'
+//     >
+//       {showReplyBox[c._id] ? 'Cancel' : 'Reply'}
+//     </button>
+//     </div>)
+//     : null
+    
+//     }  
+    
+    
+
+//     {/* Reply Input */}
+//     {showReplyBox[c._id] && (
+//       <div className='mt-1 '>
+//         <input
+//           type='text'
+//           placeholder='Write a reply...'
+//           value={replyInput[c._id] || ''}
+//           onChange={(e) =>
+//             setReplyInput(prev => ({ ...prev, [c._id]: e.target.value }))
+//           }
+//           className='w-full border px-2 py-1 rounded-md text-sm'
+//         />
+//         <button
+//           onClick={() => handleReply(post._id, c._id)}
+//           className='mt-1 bg-green-500 text-white px-2 py-1 text-xs cursor-pointer rounded hover:bg-green-600'
+//         >
+//           Reply
+//         </button>
+//       </div>
+//     )}
+
+//     {/* Render Replies */}
+//     {c.replies && c.replies.length > 0 && (
+//       <div className=''>
+//         <button
+//           onClick={() =>
+//             setShowReplies(prev => ({ ...prev, [c._id]: !prev[c._id] }))
+//           }
+//           className='text-indigo-500 text-xs mb-1 cursor-pointer'
+//         >
+//           {showReplies[c._id] ? 'Hide Replies' : `View Replies (${c.replies.length})`}
+//         </button>
+
+//         {showReplies[c._id] && (
+//           <div className='mt-1 space-y-1'>
+//            {[...c.replies].reverse().map((r, j) => {
+//   const replyUserId = typeof r.userId === 'object' ? r.userId._id : r.userId;
+
+//   return (
+//     <div key={j} className='text-xs text-gray-600 ml-5 flex items-center justify-between'>
+//       <div className='flex items-start justify-center gap-2'>
+//          <div>
+//       <div className='font-semibold'>
+//         {r.name?.firstName || r.userId?.firstName || 'User'} {r.name?.lastName || r.userId?.lastName || ''}
+//       </div> 
+//       {/* <p className='text-[10px] text-gray-400 ml-1'>
+//       </p> */}
+
+//       <div className='ml-1'>
+//         {r.text}
+//       </div>
+//       </div>
+
+//       <div>
+//          {getRelativeTime(r.createdAt)}
+//       </div>
+//       </div>
+
+      
+//       <div>
+//         {(id === replyUserId && post.userId._id !== id) && (
+//         <button
+//           onClick={() => handleDeleteReply(post._id, c._id, r._id)}
+//           className='bg-red-600 text-white px-2 py-1 rounded-md text-xs ml-2 cursor-pointer'
+//         >
+//           Delete
+//         </button>
+//       )}
+//       </div>
+//     </div>
+//   );
+// })}
+
+
+//           </div>
+//         )}
+//       </div>
+//     )}
+//   </div>
+// ))}
+
+// </div>
+
+//                 </div>
+//             )}      
+//               </div>
+//             ))
+//           ) : (
+//             <p className='text-center text-gray-500 col-span-full'>No posts to display.</p>
+//           )}
+//       </div>
+
+
+
+
+// <div>
+//                                 <h1 className='text-3xl font-bold  mt-2 mb-5 text-center text-white'>Home Feed</h1>
+//               <div key={index} className='bg-[#10121b66] px-8 py-5 rounded-xl transition'>
+                
+//                 <div className='flex items-center '>
+//                   <img
+//                     src={post.userId?.profilePhoto || '/default-profile.png'}
+//                     alt='Profile'
+//                     className='w-10 h-10 rounded-full mr-3 object-cover'
+//                   />
+//                   <div>
+//                     <Link to={`/user/${post.userId?._id}`}><p className='font-semibold hover:underline transition-all duration-200 text-white'>{post.userId?.firstName} {post.userId?.lastName}</p></Link>
+//                     <p className='text-sm text-gray-300'>{new Date(post.createdAt).toLocaleString()}</p>
+//                   </div>
+//                 </div>
+
+//             {post.images?.length > 0 && (
+//   <div className="relative w-[100%] max-w-xl mx-auto">
+//     <div className="relative mt-4">
+//       <img
+//         src={post.images[currentImageIndex[post._id] || 0]}
+//         alt={`Post ${post._id}`}
+//         className="max-h-[500px] bg-[#10121b66] w-full object-contain rounded-lg"
+//       />
+     
+//     </div>
+
+//     <div className="flex justify-center gap-2 mt-2">
+//       {post.images.map((_, index) => (
+//         <button
+//           key={index}
+//           className={`h-2 w-2 rounded-full cursor-pointer ${
+//             (currentImageIndex[post._id] || 0) === index
+//               ? 'bg-blue-500'
+//               : 'bg-gray-300'
+//           }`}
+//           onClick={() =>
+//             setCurrentImageIndex((prev) => ({
+//               ...prev,
+//               [post._id]: index,
+//             }))
+//           }
+//         />
+//       ))}
+//     </div>
+//   </div>
+// )}
+
+//       <p className='text-white font-semibold my-3 text-[15px] '>{post.description}</p>
+
+//     <div className='flex justify-between items-center  text-white'>
+//       <div className='text-[13px]'>{post.likes.length} {post.likes.length === 1 ? 'Like' : 'Likes'}</div>
+//       <div className='text-[13px]'>{post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}</div>
+//     </div>
+
+//          <div className='h-[0.5px] bg-gray-500 mt-2'></div>
+
+//         <div className='flex justify-between items-center mt-2 mb-[-8px]'>
+//           <div className='flex items-center gap-2'>
+//               <button onClick={() => handleLike(post._id)}>
+//                     {post.likes.includes(id) ? (
+//                       <FaHeart className='text-white text-xl cursor-pointer' />
+//                     ) : (
+//                       <FaRegHeart className='text-white text-xl cursor-pointer' />
+//                     )}
+//                   </button>
+//                   <div className='text-white'>Like</div>
+//           </div>
+//           <div className='flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#10121b66]' onClick={() =>
+//     setCommentBox((prev) => ({
+//       ...prev,
+//       [post._id]: !prev[post._id],
+//     }))
+//   }
+//   ref={(el) => {
+//     if (el) commentToggleRefs.current[post._id] = el;
+//     else delete commentToggleRefs.current[post._id];
+//   }}
+// >
+//              <FaRegCommentDots size={20} className='text-white'/>
+//             <div className='text-white '>Comment</div>
+//           </div>
+
+//         </div>
+                
+//           {commentBox[post._id] && (
+//           <div className='mt-4' 
+//           ref={(el) => {
+//       if (el) commentBoxRefs.current[post._id] = el;
+//       else delete commentBoxRefs.current[post._id];
+//     }}
+//           >
+//             <div className='flex items-center gap-2'>
+//                   <input
+//                     type='text'
+//                     placeholder='Add a comment...'
+//                     value={commentInput[post._id] || ''}
+//                     onChange={(e) =>
+//                       setCommentInput(prev => ({ ...prev, [post._id]: e.target.value }))
+//                     }
+//                     className='w-full border px-3 py-1 rounded-md text-white'
+//                   />
+//                   <button
+//                     onClick={() => handleComment(post._id)}
+//                     className=' bg-blue-500 text-white px-3 py-1 cursor-pointer rounded-md hover:bg-blue-600'
+//                   >
+//                     Comment
+//                   </button>
+//                  </div>
+//                   <div className='mt-3 max-h-40 overflow-y-auto mx-3'>
+//                   <div className='font-semibold text-[12px] text-white my-1'>{post.comments.length === 0 ? 'No comments yet' : 'Comments'}</div>
+// {[...post.comments].reverse().map((c, i) => (
+//   <div key={i} className='mb-2 mx-1 relative bg-[#15182666] p-2 rounded-md'>
+//     <div className='text-sm text-white '>
+//       <div className='font-semibold flex items-center justify-between'>
+//        <div>{c.userId ? `${c.userId.firstName} ${c.userId.lastName}` : 'User'} </div>  
+//     <div className='flex items-center justify-center gap-1'><div className='text-[12px] text-white'>{getRelativeTime(c.createdAt)}</div> <div  ref={(el) => {
+//     if (el) toggleRefs.current[c._id] = el;
+//     else delete toggleRefs.current[c._id];
+//   }}
+//   onClick={(e) => {
+//     e.stopPropagation();
+//     toggleMenu(c._id);
+//   }} className='cursor-pointer hover:bg-[#10121b66] rounded-full p-1'><BsThreeDots size={16} className=''/></div></div>    
+//       </div> 
+//       {/*  */}
+    
+//     </div>
+//     <div className='text-sm text-gray-300 '>
+//     {c.text}  
+//     </div>
+
+//    {openMenu[c._id] && (
+//   <div
+//   ref={(el) => {
+//       if (el) menuRefs.current[c._id] = el;
+//       else delete menuRefs.current[c._id];
+//     }}
+//     className='bg-[#15182666]  text-white px-2 py-2 flex flex-col justify-center items-center absolute top-[-15px] right-10 rounded-md font-semibold shadow-lg gap-2'
+//   >
+//     {c.userId._id === id && (
+//       <button
+//         onClick={() => handleDeleteComment(post._id, c._id)}
+//         className='text-xs cursor-pointer bg-red-500 px-3 py-1 rounded-md hover:bg-red-600'
+//       >
+//         Delete
+//       </button>
+//     )}
+//     <button
+//       onClick={() =>
+//         setShowReplyBox((prev) => ({ ...prev, [c._id]: !prev[c._id] }))
+//       }
+//       className='text-xs cursor-pointer bg-green-500 w-[60px] py-1 rounded-md hover:bg-green-600'
+    
+//     >
+//       {showReplyBox[c._id] ? 'Cancel' : 'Reply'}
+//     </button>
+//   </div>
+// )}
+
+    
+
+//     {showReplyBox[c._id] && (
+//       <div className='mt-1 '>
+//         <input
+//           type='text'
+//           placeholder='Write a reply...'
+//           value={replyInput[c._id] || ''}
+//           onChange={(e) =>
+//             setReplyInput(prev => ({ ...prev, [c._id]: e.target.value }))
+//           }
+//           className='w-full border  text-white mt-1 placeholder:hover:border-0 px-2 py-1 rounded-md text-sm border-white placeholder:border-white'
+//         />
+//         <button
+//           onClick={() => handleReply(post._id, c._id)}
+//           className='my-1 bg-green-500 text-white px-2 py-1 text-xs cursor-pointer rounded hover:bg-green-600'
+//         >
+//           Reply
+//         </button>
+//       </div>
+//     )}
+
+//     {/* Render Replies */}
+//     {c.replies && c.replies.length > 0 && (
+//       <div className=''>
+//         <button
+//           onClick={() =>
+//             setShowReplies(prev => ({ ...prev, [c._id]: !prev[c._id] }))
+//           }
+//           className='text-white text-xs mb-1 cursor-pointer bg-[#151826] py-1 px-2 rounded-md'
+//         >
+//           {showReplies[c._id] ? 'Hide Replies' : `View Replies (${c.replies.length})`}
+//         </button>
+
+//         {showReplies[c._id] && (
+//           <div className='mt-1 space-y-1'>
+//            {[...c.replies].reverse().map((r, j) => {
+//   const replyUserId = typeof r.userId === 'object' ? r.userId._id : r.userId;
+
+//   return (
+//     <div key={j} className='text-xs text-gray-600 ml-5 flex items-center justify-between bg-[#10121b66] p-2 rounded-md'>
+//       <div className='flex items-start justify-center gap-2'>
+//          <div>
+//       <div className='font-semibold text-white'>
+//         {r.name?.firstName || r.userId?.firstName || 'User'} {r.name?.lastName || r.userId?.lastName || ''}
+//       </div> 
+//       <div className=' text-white'>
+//         {r.text}
+//       </div>
+//       </div>
+
+//       <div className='text-white'>
+//          {getRelativeTime(r.createdAt)}
+//       </div>
+//       </div>
+
+      
+//       <div>
+//         {(id === replyUserId && post.userId._id !== id) && (
+//         <button
+//           onClick={() => handleDeleteReply(post._id, c._id, r._id)}
+//           className='bg-red-600 text-white px-2 py-1 rounded-md text-xs ml-2 cursor-pointer'
+//         >
+//           Delete
+//         </button>
+//       )}
+//       </div>
+//     </div>
+//   );
+// })}
+
+
+//           </div>
+//         )}
+//       </div>
+//     )}
+//   </div>
+// ))}
+
+// </div>
+
+//                 </div>
+//             )}      
+//               </div>
+//               </div>

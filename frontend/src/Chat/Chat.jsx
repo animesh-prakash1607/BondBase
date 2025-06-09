@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import io from "socket.io-client";
+import { toast, Toaster } from 'react-hot-toast';
 
-const socket = io("https://bondbase.onrender.com");
+
+const socket = io("http://localhost:3000");
 
 const Chat = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -19,24 +21,24 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    axios.get("https://bondbase.onrender.com/api/user/allUsers")
+    axios.get("http://localhost:3000/api/user/allUsers")
       .then(res => setAllUsers(res.data))
-      .catch(err => console.error("User fetch error", err));
+      .catch(err => toast.error(err.response.data.message));
   }, []);
 
   const selectUser = async (user) => {
     setCurrentChatUser(user);
     try {
-      const convo = await axios.post("https://bondbase.onrender.com/api/conversations/", {
+      const convo = await axios.post("http://localhost:3000/api/conversations/", {
         senderId: currentUserId,
         receiverId: user._id,
       });
       setConversationId(convo.data._id);
 
-      const msgs = await axios.get(`https://bondbase.onrender.com/api/messages/${convo.data._id}`);
+      const msgs = await axios.get(`http://localhost:3000/api/messages/${convo.data._id}`);
       setMessages(msgs.data);
     } catch (err) {
-      console.error("Chat load error", err);
+      toast.error(err.response.data.message);
     }
   };
 
@@ -50,7 +52,7 @@ const Chat = () => {
     };
 
     try {
-      const res = await axios.post("https://bondbase.onrender.com/api/messages/", msg);
+      const res = await axios.post("http://localhost:3000/api/messages/", msg);
       const msgWithTime = { ...res.data, createdAt: new Date().toISOString() };
       setMessages(prev => [...prev, msgWithTime]);
 
@@ -61,7 +63,7 @@ const Chat = () => {
 
       setNewMessage("");
     } catch (err) {
-      console.error("Message send error", err);
+      toast.error(err.response.data.message); 
     }
   };
 
@@ -86,18 +88,23 @@ const Chat = () => {
   }, [currentUserId]);
 
   return (
-    <div className="flex h-[80vh] my-10 shadow-lg rounded-lg overflow-hidden">
+    <>
+    <Toaster />
+    <div className="w-full h-full flex flex-col items-center justify-center ">
+                  <h1 className="text-3xl font-bold text-white text-start mb-3">Chat</h1>
+
+    <div className="flex flex-col sm:flex-row h-[82vh] w-[98%] sm: mx-auto shadow-lg rounded-lg overflow-hidden ">
       {/* User List */}
-      <div className="w-1/4 bg-gray-100 p-4 border-r overflow-y-auto">
-        <h3 className="text-xl font-semibold mb-4">Select Users</h3>
+      <div className="w-full sm:w-[45%] lg:w-1/4 bg-[#10121b66] p-4 border-r overflow-y-auto border-[#71779040] rounded-md ">
+        <h3 className="text-xl font-semibold mb-4 text-white">Select Users</h3>
         {allUsers
           .filter(user => user._id !== currentUserId)
           .map(user => (
             <div
               key={user._id}
               onClick={() => selectUser(user)}
-              className={`p-3 rounded cursor-pointer mb-2 bg-gray-300 hover:bg-gray-200 ${
-                currentChatUser?._id === user._id ? "bg-gray-300" : ""
+         className={`p-3 rounded cursor-pointer font-semibold text-white  bg-[#10121b66] transition-all mb-2 hover:bg-[#10121bdd]  ${
+                currentChatUser?._id === user._id ? "bg-[#10121bdd]" : ""
               }`}
             >
               {user.firstName} {user.lastName}
@@ -106,8 +113,8 @@ const Chat = () => {
       </div>
 
       {/* Chat Area */}
-      <div className="flex flex-col w-3/4">
-        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-white">
+      <div className="flex flex-col sm:w-3/4">
+        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#10121b66] mt-[20px] sm:mt-0 rounded-md">
           {currentChatUser ? (
             messages.map((msg, idx) => {
               const isOwn = msg.sender === currentUserId;
@@ -119,8 +126,8 @@ const Chat = () => {
                   <div
                     className={`max-w-xs p-3 rounded-lg shadow ${
                       isOwn
-                        ? "bg-blue-500 text-white rounded-br-none"
-                        : "bg-gray-200 text-gray-900 rounded-bl-none"
+                        ? "bg-[#10121b66] text-white rounded-br-none"
+                        : "bg-[#10121b66] text-white rounded-bl-none"
                     }`}
                   >
                     <div className="text-sm">{msg.text}</div>
@@ -132,7 +139,7 @@ const Chat = () => {
               );
             })
           ) : (
-<div className="h-[95%] flex items-center justify-center">
+<div className=" h-[95%] flex items-center justify-center">
   <div className="text-center text-gray-500 text-lg">
     Select a user to start chatting
   </div>
@@ -143,18 +150,18 @@ const Chat = () => {
 
         {/* Message Input */}
         {currentChatUser && (
-          <div className="p-3 border-t bg-gray-50 flex items-center gap-2">
+          <div className="p-3 border-t bg-[#10121b66] border-[#71779040] flex items-center gap-2">
             <input
               type="text"
               placeholder="Type a message..."
-              className="flex-1 p-2 border rounded focus:outline-none focus:ring focus:ring-blue-200"
+              className="flex-1 p-2 border border-white placeholder:text-white rounded text-white focus:outline-none focus:ring focus:ring-white"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
             />
             <button
               onClick={handleSend}
               disabled={!conversationId || !newMessage.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition cursor-pointer"
             >
               Send
             </button>
@@ -162,6 +169,8 @@ const Chat = () => {
         )}
       </div>
     </div>
+    </div>
+    </>
   );
 };
 

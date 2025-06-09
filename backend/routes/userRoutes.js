@@ -51,6 +51,7 @@ router.post('/id', async (req, res) => {
 });
 
 router.put('/follow/:userId', async (req, res) => {
+
   const { userId } = req.params; // the user to follow/unfollow
   const { currentUserId } = req.body; // the current user
 
@@ -115,7 +116,6 @@ router.get('/:userId/following', async (req, res) => {
 // Express route example
 router.put('/privacy', async (req, res) => {
   const { userId, isPrivate } = req.body;
-  console.log(userId, isPrivate);
   try {
 const user = await User.findByIdAndUpdate(userId, { privacy: isPrivate }, { new: true });
     res.json(user);
@@ -127,8 +127,6 @@ const user = await User.findByIdAndUpdate(userId, { privacy: isPrivate }, { new:
 router.patch('/updateProfile/:id', upload.single('profilePhoto'), async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(req.body);
-    console.log(req.file);
 
     // Allowed fields to update
     const allowedUpdates = ['firstName', 'lastName', 'phoneNumber', 'bio', 'privacy', 'title'];

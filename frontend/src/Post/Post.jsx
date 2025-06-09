@@ -1,6 +1,7 @@
 import React, { useState, useRef  } from 'react';
 import axios from 'axios';
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'; // Install lucide-react for icons
+import toast, { Toaster } from 'react-hot-toast';
 
 const Post = () => {
   const [description, setDescription] = useState('');
@@ -36,7 +37,7 @@ const Post = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post('https://bondbase.onrender.com/api/posts/create', formData, {
+      const res = await axios.post('http://localhost:3000/api/posts/create', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -58,8 +59,11 @@ const Post = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-12 p-6 bg-white shadow-lg rounded-xl border border-gray-200">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Create a Post</h2>
+    <>
+    <Toaster />
+   
+    <div className="w-[95%] mx-auto mt-12 p-6 bg-[#10121b66] shadow-lg rounded-xl ">
+      <h2 className="text-3xl font-bold text-white mb-6 text-center">Create a Post</h2>
 
       {error && (
         <div className="flex items-center gap-2 p-3 mb-4 text-sm text-red-600 bg-red-100 rounded">
@@ -77,7 +81,7 @@ const Post = () => {
       <form onSubmit={handleSubmit} encType="multipart/form-data">
         <textarea
           rows={4}
-          className="w-full p-4 border rounded-lg resize-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
+          className="w-full p-4 border rounded-lg resize-none text-white focus:outline-none mb-4"
           placeholder="What's on your mind?"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -89,7 +93,7 @@ const Post = () => {
           multiple
           accept="image/*"
           onChange={handleImageChange}
-          className=" block w-full text-sm cursor-pointer text-gray-600 file:mr-4 file:py-2 file:px-4
+          className=" block w-full text-sm cursor-pointer text-white file:mr-4 file:py-2 file:px-4
             file:rounded-lg file:border-0
             file:text-sm file:font-semibold
             file:bg-gray-100 file:text-gray-700
@@ -125,6 +129,7 @@ const Post = () => {
         </button>
       </form>
     </div>
+     </>
   );
 };
 

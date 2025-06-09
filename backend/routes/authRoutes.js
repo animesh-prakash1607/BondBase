@@ -9,7 +9,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 router.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
-  console.log("Received signup request:", req.body);
 
   try {
     if (password.length < 6) {

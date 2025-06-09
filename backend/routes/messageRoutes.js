@@ -6,7 +6,6 @@ const router = express.Router();
 
 // ➤ Send a message
 router.post("/", async (req, res) => {
-  console.log("Request body:", req.body);  // <-- ADD THIS LINE
 
   const { sender, text, conversationId } = req.body;
 

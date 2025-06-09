@@ -22,7 +22,6 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
   'http://localhost:5173',             // local dev
-  'https://bondbase.netlify.app'       // Netlify deployment
 ];
 
 // Setup Socket.IO
