@@ -163,6 +163,8 @@ useEffect(() => {
 
   // Socket.io connection
   const socket = io('https://bondbase.onrender.com', {
+      transports: ['websocket'], // ✅ good
+
     withCredentials: true,
   });
 
