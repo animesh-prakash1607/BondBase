@@ -25,6 +25,8 @@ const OtherUsers = () => {
    const commentBoxRefs = useRef({});
    const commentToggleRefs = useRef({});
    const [followLoading, setFollowLoading] = useState({});
+   const [loadingUsers, setLoadingUsers] = useState(true); // Add at top
+
 
    
    
@@ -83,6 +85,7 @@ const OtherUsers = () => {
  useEffect(() => {
    const fetchUsers = async () => {
      const token = localStorage.getItem('token');
+         setLoadingUsers(true); // Start loading
      try {
        const response = await axios.get('https://bondbase.onrender.com/api/user/allUsers',
          {
@@ -93,8 +96,10 @@ const OtherUsers = () => {
        ); // Replace with your actual endpoint
        setAllUsers(response.data);
      } catch (error) {
-       toast.error(error.response.data.message);
-     }
+       toast.error(error.response?.data?.message || "Failed to fetch users");
+     } finally {
+      setLoadingUsers(false); // End loading
+    }
    };
  
    fetchUsers();
@@ -226,54 +231,59 @@ const OtherUsers = () => {
   <h2 className="text-3xl font-bold text-white text-center mb-6">All Users</h2>
 
   <div className="bg-[#10121b41] p-2 sm:p-4 rounded-xl shadow space-y-3">
-    {user &&
-      allUsers.map((otherUser) => {
-        if (otherUser._id === user._id) return null;
+  {loadingUsers ? (
+    <div className="text-center text-white py-6 animate-pulse">
+      Loading users...
+    </div>
+  ) : (
+    user &&
+    allUsers.map((otherUser) => {
+      if (otherUser._id === user._id) return null;
 
-        const isFollowing = following.includes(otherUser._id);
+      const isFollowing = following.includes(otherUser._id);
 
-        return (
-          <div
-            key={otherUser._id}
-            className="flex items-center justify-between bg-[#1a1c2b] hover:bg-[#222436] transition-all duration-200 rounded-xl px-2 sm:px-4 py-3"
-          >
-            {/* Avatar + Name */}
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 flex items-center justify-center bg-blue-600 text-white font-bold rounded-full shadow-sm">
-                {otherUser.firstName.charAt(0).toUpperCase()}
-              </div>
-              <Link
-                to={`/user/${otherUser._id}`}
-                className="text-white font-medium hover:underline hover:text-blue-400"
-              >
-                {otherUser.firstName} {otherUser.lastName}
-              </Link>
+      return (
+        <div
+          key={otherUser._id}
+          className="flex items-center justify-between bg-[#1a1c2b] hover:bg-[#222436] transition-all duration-200 rounded-xl px-2 sm:px-4 py-3"
+        >
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 flex items-center justify-center bg-blue-600 text-white font-bold rounded-full shadow-sm">
+              {otherUser.firstName.charAt(0).toUpperCase()}
             </div>
-
-            {/* Follow/Unfollow Button */}
-            <div>
-             <button
-  onClick={() => handleFollowToggle(otherUser._id)}
-  disabled={followLoading[otherUser._id]}
-  className={`px-4 py-1.5 rounded-full text-sm font-semibold  transition duration-200 ${
-    followLoading[otherUser._id]
-      ? "bg-gray-600 text-white cursor-not-allowed"
-      : isFollowing
-        ? "bg-red-500 text-white hover:bg-red-600"
-        : "bg-blue-500 text-white hover:bg-blue-600"
-  }`}
->
-  {followLoading[otherUser._id]
-    ? (isFollowing ? "Unfollowing..." : "Following...")
-    : (isFollowing ? "Unfollow" : "Follow")}
-</button>
-
-            </div>
-            
+            <Link
+              to={`/user/${otherUser._id}`}
+              className="text-white font-medium hover:underline hover:text-blue-400"
+            >
+              {otherUser.firstName} {otherUser.lastName}
+            </Link>
           </div>
-        );
-      })}
-  </div>
+
+          <button
+            onClick={() => handleFollowToggle(otherUser._id)}
+            disabled={followLoading[otherUser._id]}
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition duration-200 ${
+              followLoading[otherUser._id]
+                ? "bg-gray-600 text-white cursor-not-allowed"
+                : isFollowing
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+          >
+            {followLoading[otherUser._id]
+              ? isFollowing
+                ? "Unfollowing..."
+                : "Following..."
+              : isFollowing
+              ? "Unfollow"
+              : "Follow"}
+          </button>
+        </div>
+      );
+    })
+  )}
+</div>
+
 </div>
 </>
   );

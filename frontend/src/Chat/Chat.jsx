@@ -18,6 +18,8 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef();
   const [sendLoading, setSendLoading] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
 
 
   useEffect(() => {
@@ -33,6 +35,8 @@ const Chat = () => {
 
   const selectUser = async (user) => {
     setCurrentChatUser(user);
+      setLoadingMessages(true); // ⬅️ Start loading
+
     try {
       const convo = await axios.post("https://bondbase.onrender.com/api/conversations/", {
         senderId: currentUserId,
@@ -45,6 +49,9 @@ const Chat = () => {
     } catch (err) {
       toast.error(err.response.data.message);
     }
+    finally {
+    setLoadingMessages(false); // ⬅️ Stop loading
+  }
   };
 
  const handleSend = async () => {
@@ -123,9 +130,14 @@ const Chat = () => {
       </div>
 
       {/* Chat Area */}
-      <div className="flex flex-col sm:w-3/4">
-        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#10121b66] mt-[20px] sm:mt-0 rounded-md">
+      <div className="flex flex-col sm:w-3/4 h-full">
+<div className="flex-1 p-4 bg-[#10121b66] mt-[5px] sm:mt-0 rounded-md overflow-y-auto h-full  space-y-3">
           {currentChatUser ? (
+             loadingMessages ? (
+    <div className="h-[95%] flex items-center justify-center">
+      <div className="text-center text-gray-400 text-base animate-pulse">Loading messages...</div>
+    </div>
+  ) : (
             messages.map((msg, idx) => {
               const isOwn = msg.sender === currentUserId;
               return (
@@ -140,7 +152,7 @@ const Chat = () => {
                         : "bg-[#10121b66] text-white rounded-bl-none"
                     }`}
                   >
-                    <div className="text-sm">{msg.text}</div>
+                    <div className="text-sm ">{msg.text}</div>
                     <div className="text-[10px] mt-1 text-right opacity-70">
                       {new Date(msg.createdAt).toLocaleString()}
                     </div>
@@ -148,7 +160,7 @@ const Chat = () => {
                 </div>
               );
             })
-          ) : (
+          )) : (
 <div className=" h-[95%] flex items-center justify-center">
   <div className="text-center text-gray-500 text-lg">
     Select a user to start chatting
@@ -160,18 +172,18 @@ const Chat = () => {
 
         {/* Message Input */}
         {currentChatUser && (
-          <div className="p-3 border-t bg-[#10121b66] border-[#71779040] flex items-center gap-2">
+          <div className="p-3 border-t bg-[#10121b66] border-[#71779040] max-[400px]:flex-col flex items-center gap-2">
             <input
               type="text"
               placeholder="Type a message..."
-              className="flex-1 p-2 border border-white placeholder:text-white rounded text-white focus:outline-none focus:ring focus:ring-white"
+              className="flex-1 p-2 border border-white max-[400px]:w-full placeholder:text-white rounded text-white focus:outline-none focus:ring focus:ring-white"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
             />
            <button
   onClick={handleSend}
   disabled={!conversationId || !newMessage.trim() || sendLoading}
-  className={`px-4 py-2 rounded transition ${
+  className={`px-4 max-[400px]:w-full py-2 rounded transition ${
     sendLoading || !newMessage.trim()
       ? 'bg-gray-600 cursor-not-allowed'
       : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'

@@ -33,7 +33,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
       
         <Route path="/user/:id" element={<UserProfile />} />
-        <Route path="*" element={<div>404 Not Found</div>} />
+        <Route path="*" element={<FrontPage />} />
       </Routes>
     </Router>
   );

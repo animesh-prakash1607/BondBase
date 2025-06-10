@@ -25,17 +25,33 @@ const FrontPage = () => {
      setEmail(fetchEmail);
    }, [email])
 
-    useEffect(() => { const fetchProfile = async () => {
-      const id= localStorage.getItem('id');
-      setId(id);
-   try { const response = await axios.post( "https://bondbase.onrender.com/api/user/id", { id },
-     { headers:
-       { Authorization: `Bearer ${localStorage.getItem("token")}`, }
-       } );
-        setProfile(response.data.user);
-       } catch (error) 
-       { toast.error(error.response.data.message); } 
-      }; fetchProfile(); }, [id]);
+  useEffect(() => {
+  const fetchProfile = async () => {
+    const id = localStorage.getItem('id');
+    setId(id);
+
+    // ✅ Skip if ID is not present (user is logged out)
+    if (!id) return;
+
+    try {
+      const response = await axios.post(
+        "https://bondbase.onrender.com/api/user/id",
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setProfile(response.data.user);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to fetch user profile");
+    }
+  };
+
+  fetchProfile();
+}, [id]);
+
    
    
   const logout=()=>{
@@ -79,7 +95,7 @@ const FrontPage = () => {
               </> :      <div onClick={logout} className='text-[15px] font-semibold flex items-center gap-3 justify-center sm:justify-start hover:bg-[#10121b66] px-2 py-3 rounded-md cursor-pointer transition-all '><RiLogoutBoxLine size={23} /><div className='hidden sm:block'>Log Out</div> </div>
               }
 {(profile && email) && (
-  <div className='text-[18px] w-[90%]  sm:w-[75%] font-semibold absolute bottom-0  flex items-center justify-center sm:justify-start  border-t border-[#71779040]  gap-3 hover:bg-[#10121b66] p-2 sm:px-2 sm:py-3 rounded-md cursor-pointer transition-all '>
+  <div className='text-[18px] w-[90%]  sm:w-[75%] font-semibold absolute bottom-0 flex items-center justify-center sm:justify-start  border-t border-[#71779040]  gap-3 hover:bg-[#10121b66] pt-3 sm:px-2 sm:py-3 rounded-md cursor-pointer transition-all '>
     <img
       src={profile.profilePhoto || '/default-profile.png'}
       alt="Profile"
