@@ -12,9 +12,12 @@ import FrontPage from './Home/FrontPage.jsx';
 import OtherUsers from './Users/OtherUsers.jsx';
 import PageContent from './Home/PageContent.jsx';
 import BackgroundVideo from '../src/assets/background.mp4'
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
+    <>
+    <Toaster />
     <Router>
        <video autoPlay loop muted className='fixed top-0 left-0 w-full h-full object-cover z-[-100]'>
           <source src={BackgroundVideo} type='video/mp4' />
@@ -36,6 +39,7 @@ function App() {
         <Route path="*" element={<FrontPage />} />
       </Routes>
     </Router>
+    </>
   );
 }
 

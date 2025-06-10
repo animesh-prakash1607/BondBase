@@ -67,7 +67,6 @@ const FrontPage = () => {
 
   return (
     <>
-    <Toaster />
     <div className='w-screen h-screen flex justify-center items-center '>
       <div className='w-[98vw] h-[96vh] bg-[#10121b66] backdrop-blur-xs mx-auto  rounded-3xl flex flex-col relative'>
             {/* <div className='py-4 px-3 border-b-[1px] border-[#71779040] mx-6 flex items-center justify-between'>

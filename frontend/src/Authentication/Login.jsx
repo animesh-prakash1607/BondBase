@@ -43,7 +43,6 @@ const Login = () => {
 
   return (
     <>
-      <Toaster />
       <div className='flex flex-col items-center justify-center min-h-screen px-4'>
         <h2 className='text-3xl font-bold text-white mb-6'>Welcome Back</h2>
         <form onSubmit={handleSubmit} className='w-full max-w-md bg-[#10121ba1] p-6 rounded-xl shadow space-y-4'>

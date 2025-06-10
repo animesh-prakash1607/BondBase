@@ -254,6 +254,8 @@ const handleDeletePost = async (postId) => {
   try {
     await axios.delete(`https://bondbase.onrender.com/api/posts/delete/${postId}/${id}`);
     setFormData(prev => prev.filter(p => p._id !== postId));
+
+    toast.success("Post deleted successfully");
   } catch (error) {
     toast.error(error?.response?.data?.message || "Failed to delete post");
   } finally {
@@ -483,7 +485,6 @@ const getRelativeTime = (date) => {
 
   return (
     <>
-          <Toaster  />
 
     <div>
       <div className="flex flex-col items-center justify-center mt-8 px-2">

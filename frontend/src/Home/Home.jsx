@@ -385,7 +385,6 @@ useEffect(() => {
 
   return (
     <>
-    <Toaster />
     <div className='mb-5'>
     <div className='text-[rgb(17,24,39)]  min-h-screen  py-5'>
       {/* Hero Section */}
@@ -593,7 +592,7 @@ useEffect(() => {
   onClick={() =>
     setShowReplyBox(prev => (prev === c._id ? null : c._id)) // toggle
   }
-  className='text-xs cursor-pointer bg-green-500 w-full py-1 rounded-md hover:bg-green-600'
+  className='text-xs cursor-pointer bg-green-500 w-[70px] py-1 rounded-md hover:bg-green-600'
 >
   {showReplyBox === c._id ? 'Cancel' : 'Reply'}
 </button>

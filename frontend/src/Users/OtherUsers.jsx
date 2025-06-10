@@ -226,7 +226,6 @@ const OtherUsers = () => {
 
   return (
     <>
-    <Toaster />
    <div className="p-2 sm:p-6 mt-10 w-full mx-auto">
   <h2 className="text-3xl font-bold text-white text-center mb-6">All Users</h2>
 

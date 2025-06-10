@@ -60,7 +60,6 @@ const Post = () => {
 
   return (
     <>
-    <Toaster />
    
     <div className="w-[95%] mx-auto mt-12 p-6 bg-[#10121b66] shadow-lg rounded-xl ">
       <h2 className="text-3xl font-bold text-white mb-6 text-center">Create a Post</h2>

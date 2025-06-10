@@ -35,7 +35,7 @@ const Signup = () => {
       navigate("/login");
 
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,6 @@ const Signup = () => {
 
   return (
     <>
-    <Toaster />
     <div className='flex flex-col items-center justify-center min-h-screen  px-4'>
       <form onSubmit={handleSubmit} className='w-full sm:w-[45%] bg-[#10121ba1] p-6 rounded-xl shadow space-y-4'>
               <h2 className='text-3xl font-bold text-center text-white mb-6'>Create Your Account</h2>
