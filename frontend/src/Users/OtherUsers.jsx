@@ -24,6 +24,8 @@ const OtherUsers = () => {
    const toggleRefs = useRef({});
    const commentBoxRefs = useRef({});
    const commentToggleRefs = useRef({});
+   const [followLoading, setFollowLoading] = useState({});
+
    
    
    
@@ -100,28 +102,31 @@ const OtherUsers = () => {
  
  
  const handleFollowToggle = async (targetUserId) => {
-   try {
-     // Optimistically update
-     const isAlreadyFollowing = following.some(user => user._id === targetUserId);
-     const updatedFollowing = isAlreadyFollowing
-       ? following.filter(user => user._id !== targetUserId)
-       : [...following, { _id: targetUserId }];
-     setFollowing(updatedFollowing);
- 
-     // Backend update
-     await axios.put(`https://bondbase.onrender.com/api/user/follow/${targetUserId}`, {
-       currentUserId: id,
-     });
- 
-     // Refetch user data to sync
-     const updatedUser = await axios.post("https://bondbase.onrender.com/api/user/id", { id });
-     setUser(updatedUser.data.user);
-     setFollowing(updatedUser.data.user.following || []); // ✅ CORRECT HERE AGAIN
- 
-   } catch (error) {
-     toast.error(error.response.data.message);
-   }
- };
+  if (followLoading[targetUserId]) return; // Prevent double clicks
+
+  setFollowLoading(prev => ({ ...prev, [targetUserId]: true }));
+
+  try {
+    const isAlreadyFollowing = following.some(user => user._id === targetUserId);
+    const updatedFollowing = isAlreadyFollowing
+      ? following.filter(user => user._id !== targetUserId)
+      : [...following, { _id: targetUserId }];
+    setFollowing(updatedFollowing);
+
+    await axios.put(`https://bondbase.onrender.com/api/user/follow/${targetUserId}`, {
+      currentUserId: id,
+    });
+
+    const updatedUser = await axios.post("https://bondbase.onrender.com/api/user/id", { id });
+    setUser(updatedUser.data.user);
+    setFollowing(updatedUser.data.user.following || []);
+  } catch (error) {
+    toast.error(error?.response?.data?.message || "Follow action failed");
+  } finally {
+    setFollowLoading(prev => ({ ...prev, [targetUserId]: false }));
+  }
+};
+
  
   
  useEffect(() => {
@@ -247,16 +252,22 @@ const OtherUsers = () => {
 
             {/* Follow/Unfollow Button */}
             <div>
-              <button
-              onClick={() => handleFollowToggle(otherUser._id)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold cursor-pointer transition duration-200 ${
-                isFollowing
-                  ? "bg-red-500 text-white hover:bg-red-600"
-                  : "bg-blue-500 text-white hover:bg-blue-600"
-              }`}
-            >
-              {isFollowing ? "Unfollow" : "Follow"}
-            </button>
+             <button
+  onClick={() => handleFollowToggle(otherUser._id)}
+  disabled={followLoading[otherUser._id]}
+  className={`px-4 py-1.5 rounded-full text-sm font-semibold  transition duration-200 ${
+    followLoading[otherUser._id]
+      ? "bg-gray-600 text-white cursor-not-allowed"
+      : isFollowing
+        ? "bg-red-500 text-white hover:bg-red-600"
+        : "bg-blue-500 text-white hover:bg-blue-600"
+  }`}
+>
+  {followLoading[otherUser._id]
+    ? (isFollowing ? "Unfollowing..." : "Following...")
+    : (isFollowing ? "Unfollow" : "Follow")}
+</button>
+
             </div>
             
           </div>

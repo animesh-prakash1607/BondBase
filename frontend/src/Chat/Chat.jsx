@@ -17,6 +17,8 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef();
+  const [sendLoading, setSendLoading] = useState(false);
+
 
   useEffect(() => {
     const id = localStorage.getItem("id");
@@ -45,30 +47,35 @@ const Chat = () => {
     }
   };
 
-  const handleSend = async () => {
-    if (!newMessage.trim()) return;
+ const handleSend = async () => {
+  if (!newMessage.trim() || sendLoading) return; // prevent if empty or already sending
 
-    const msg = {
-      sender: currentUserId,
-      text: newMessage,
-      conversationId,
-    };
-
-    try {
-      const res = await axios.post("https://bondbase.onrender.com/api/messages/", msg);
-      const msgWithTime = { ...res.data, createdAt: new Date().toISOString() };
-      setMessages(prev => [...prev, msgWithTime]);
-
-      socket.emit("sendMessage", {
-        ...msgWithTime,
-        receiverId: currentChatUser._id,
-      });
-
-      setNewMessage("");
-    } catch (err) {
-      toast.error(err.response.data.message); 
-    }
+  const msg = {
+    sender: currentUserId,
+    text: newMessage,
+    conversationId,
   };
+
+  setSendLoading(true); // start loading
+
+  try {
+    const res = await axios.post("https://bondbase.onrender.com/api/messages/", msg);
+    const msgWithTime = { ...res.data, createdAt: new Date().toISOString() };
+    setMessages(prev => [...prev, msgWithTime]);
+
+    socket.emit("sendMessage", {
+      ...msgWithTime,
+      receiverId: currentChatUser._id,
+    });
+
+    setNewMessage("");
+  } catch (err) {
+    toast.error(err?.response?.data?.message || "Failed to send message");
+  } finally {
+    setSendLoading(false); // stop loading
+  }
+};
+
 
   useEffect(() => {
     socket.on("receiveMessage", (msg) => {
@@ -161,13 +168,18 @@ const Chat = () => {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
             />
-            <button
-              onClick={handleSend}
-              disabled={!conversationId || !newMessage.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition cursor-pointer"
-            >
-              Send
-            </button>
+           <button
+  onClick={handleSend}
+  disabled={!conversationId || !newMessage.trim() || sendLoading}
+  className={`px-4 py-2 rounded transition ${
+    sendLoading || !newMessage.trim()
+      ? 'bg-gray-600 cursor-not-allowed'
+      : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
+  } text-white`}
+>
+  {sendLoading ? "Sending..." : "Send"}
+</button>
+
           </div>
         )}
       </div>

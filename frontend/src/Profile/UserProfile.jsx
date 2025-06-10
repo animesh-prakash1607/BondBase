@@ -431,7 +431,7 @@ const UserProfile = () => {
            <Toaster  />
  
      <div>
-       <div className="flex flex-col items-center justify-center mt-8 px-4">
+       <div className="flex flex-col items-center justify-center mt-8 px-4 ">
    <h2 className="text-3xl font-bold text-white mb-8">User Profile</h2>
  
    {user && !edit  ? (
@@ -507,7 +507,7 @@ const UserProfile = () => {
  
  
      {(profile?.privacy ==='public' || profile?.followers?.includes(visitorId)) ? (
-      <div className='mt-24 px-6'>
+      <div className='mt-16 mb-10 px-6'>
                <h2 className='text-3xl font-bold text-center mb-8 text-white'>User Posts</h2>
                <div className='grid grid-cols-1 md:grid-cols-2  gap-6'>
                     {formData && formData.length > 0 ? (

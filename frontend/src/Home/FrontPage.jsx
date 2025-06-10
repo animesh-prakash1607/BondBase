@@ -32,7 +32,6 @@ const FrontPage = () => {
      { headers:
        { Authorization: `Bearer ${localStorage.getItem("token")}`, }
        } );
-       console.log(response.data.user);
         setProfile(response.data.user);
        } catch (error) 
        { toast.error(error.response.data.message); } 
