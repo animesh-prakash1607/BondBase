@@ -12,6 +12,7 @@ import { FaUserPlus } from "react-icons/fa";
 import { FaSignInAlt } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
+import Logo from '../../public/Logo2.png'
 
 const FrontPage = () => {
   const navigate = useNavigate();
@@ -93,16 +94,15 @@ const FrontPage = () => {
             <Link to='/login'><div className='text-[15px] font-semibold flex items-center gap-3 justify-center sm:justify-start hover:bg-[#10121b66] px-2 py-3 rounded-md cursor-pointer transition-all '><FaSignInAlt size={23} /><div className='hidden sm:block'>Login</div> </div></Link>
               </> :      <div onClick={logout} className='text-[15px] font-semibold flex items-center gap-3 justify-center sm:justify-start hover:bg-[#10121b66] px-2 py-3 rounded-md cursor-pointer transition-all '><RiLogoutBoxLine size={23} /><div className='hidden sm:block'>Log Out</div> </div>
               }
-{(profile && email) && (
+
   <div className='text-[18px] w-[90%]  sm:w-[75%] font-semibold absolute bottom-0 flex items-center justify-center sm:justify-start  border-t border-[#71779040]  gap-3 hover:bg-[#10121b66] pt-3 sm:px-2 sm:py-3 rounded-md cursor-pointer transition-all '>
     <img
-      src={profile.profilePhoto || '/default-profile.png'}
+      src={Logo}
       alt="Profile"
-      className="w-12 h-12 rounded-full object-cover"
+      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
     />
-    <span className='hidden md:block'>{profile.firstName}</span>
+    <span className='hidden md:block'>BondBase</span>
   </div>
-)}
             </div>
             </div> 
       
