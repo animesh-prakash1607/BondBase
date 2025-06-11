@@ -79,7 +79,7 @@ const FrontPage = () => {
             </div> */}
          
             <div className='flex h-full relative'>
-              <div className='lg:w-[23%] md:w-[38%] w-[18%] flex justify-start items-center relative flex-col my-7 border-r-[1px] border-[#71779040] px-1 sm:px-3 md:px-8'>
+              <div className='lg:w-[23%] md:w-[38%] w-[18%] flex justify-start items-center relative flex-col my-3 border-r-[1px] border-[#71779040] px-1 sm:px-3 md:px-8'>
             <h1 className='text-[18px] font-semibold text-gray-400 mb-3 hidden sm:block'>Categories</h1>
             <div className='flex flex-col text-white gap-3 justify-start w-full '>
               <Link to={id ? '/home' : '/login'}><div className='text-[15px] font-semibold flex items-center justify-center sm:justify-start gap-3 hover:bg-[#10121b66] px-2 py-3 rounded-md cursor-pointer transition-all '><IoHome size={23} /><div className='hidden sm:block'>Home</div></div></Link>
